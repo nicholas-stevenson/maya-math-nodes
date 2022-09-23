@@ -5,22 +5,18 @@
 cmake_minimum_required(VERSION 3.3)
 project(maya-math-nodes VERSION 1.6.0)
 
+include(CMakePrintHelpers)
+
 # Set project version macro
 add_definitions(-DPROJECT_VERSION="${PROJECT_VERSION}")
 
 # Set default Maya version
-if(NOT DEFINED MAYA_VERSION)
-    set(MAYA_VERSION 2022)
-endif()
+set(MAYA_VERSION 2023)
 
 # Set node name prefix macro
-if(NOT DEFINED NODE_NAME_PREFIX)
-    set(NODE_NAME_PREFIX "math_")
-endif()
-add_definitions(-DNODE_NAME_PREFIX="${NODE_NAME_PREFIX}")
+set(NODE_NAME_PREFIX "math_")
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-find_package(Maya REQUIRED)
+add_definitions(-DNODE_NAME_PREFIX="${NODE_NAME_PREFIX}")
 
 # Set compile flags
 set(CMAKE_CXX_STANDARD 11)
@@ -30,10 +26,13 @@ if(WIN32)
     add_compile_options(/wd4068 /EHsc)
 endif()
 
+include_directories("${CMAKE_SOURCE_DIR}/../../../../shared/resources/maya/2023/devkit/include")
+link_directories("${CMAKE_SOURCE_DIR}/../../../../shared/resources/maya/2023/devkit/lib")
+
 # Create target
 add_library(mayaMathNodes SHARED
     src/Absolute.h
-    src/Add.h 
+    src/Add.h
     src/Array.h
     src/Condition.h
     src/Clamp.h
@@ -55,18 +54,14 @@ add_library(mayaMathNodes SHARED
     src/Utils.h
     src/VectorOps.h)
 
-include_directories(${MAYA_INCLUDE_DIR})
-link_directories(${MAYA_LIBRARY_DIR})
+TARGET_LINK_LIBRARIES(mayaMathNodes Foundation.lib OpenMaya.lib OpenMayaAnim.lib OpenMayaUI.lib OpenMayaRender.lib)
 
-target_link_libraries(mayaMathNodes ${MAYA_LIBRARIES})
-set_target_properties(mayaMathNodes PROPERTIES
-    COMPILE_DEFINITIONS "${MAYA_COMPILE_DEFINITIONS}"
-    PREFIX ""
-    SUFFIX ${MAYA_PLUGIN_EXT})
+SET_TARGET_PROPERTIES(mayaMathNodes PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/plug-ins/${MAYA_VERSION}")
+SET_TARGET_PROPERTIES(mayaMathNodes PROPERTIES OUTPUT_NAME mayaMathNodes)
+SET_TARGET_PROPERTIES(mayaMathNodes PROPERTIES SUFFIX ".mll")
+SET_TARGET_PROPERTIES(mayaMathNodes PROPERTIES CLEAN_DIRECT_OUTPUT 1)
+SET_TARGET_PROPERTIES(mayaMathNodes PROPERTIES LINK_FLAGS "/export:initializePlugin /export:uninitializePlugin")
 
-if(WIN32)
-    set_target_properties(mayaMathNodes PROPERTIES LINK_FLAGS "/export:initializePlugin /export:uninitializePlugin")
-endif()
 
 # Set installation directory
 if(NOT DEFINED INSTALL_DIR)

@@ -20,3 +20,9 @@ build/
 .vscode/
 dist/
 .DS_Store
+
+# Debug/Release/etc build directories
+/*-build-*/
+
+# Build extras
+plug-ins/**/*.manifest
